@@ -1,9 +1,6 @@
-package com.bigdata
+package com.bigdata.apitest
 
-import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011
+import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 
 import java.util.Properties
 

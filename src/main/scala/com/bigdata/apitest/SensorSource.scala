@@ -1,4 +1,4 @@
-package com.bigdata
+package com.bigdata.apitest
 
 import org.apache.flink.streaming.api.functions.source.SourceFunction
 
