@@ -80,7 +80,7 @@ class MyFilter extends FilterFunction[SensorReading]{
 }
 
 /**
- * 复函数, 可以获取到运行时上下文, 还有一些生命周期
+ * 富函数, 可以获取到运行时上下文, 还有一些生命周期
  */
 class MyRichMapper extends RichMapFunction[SensorReading, String]{
   override def map(in: SensorReading): String = {
