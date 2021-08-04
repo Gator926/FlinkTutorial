@@ -1,6 +1,6 @@
 package com.bigdata.apitest
 
-import org.apache.flink.api.common.functions.{FilterFunction, ReduceFunction}
+import org.apache.flink.api.common.functions.{FilterFunction, MapFunction, ReduceFunction, RichMapFunction}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 
@@ -76,5 +76,14 @@ object TransformTest {
 class MyFilter extends FilterFunction[SensorReading]{
   override def filter(t: SensorReading): Boolean = {
     t.id.startsWith("sensor_1")
+  }
+}
+
+/**
+ * 复函数, 可以获取到运行时上下文, 还有一些生命周期
+ */
+class MyRichMapper extends RichMapFunction[SensorReading, String]{
+  override def map(in: SensorReading): String = {
+    in.id + " temperature"
   }
 }
