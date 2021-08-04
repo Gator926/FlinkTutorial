@@ -1,6 +1,6 @@
 package com.bigdata.apitest
 
-import org.apache.flink.api.common.functions.ReduceFunction
+import org.apache.flink.api.common.functions.{FilterFunction, ReduceFunction}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 
@@ -64,8 +64,17 @@ object TransformTest {
 
     // 4.3 union 合流
     val unionStream = highTempStream.union(lowTempStream)
-    unionStream.print("unionStream")
+//    unionStream.print("unionStream")
+
+    // 5. 自定义过滤器
+    dataStream.filter(new MyFilter).print("filter")
 
     environment.execute(this.getClass.getSimpleName)
+  }
+}
+
+class MyFilter extends FilterFunction[SensorReading]{
+  override def filter(t: SensorReading): Boolean = {
+    t.id.startsWith("sensor_1")
   }
 }
