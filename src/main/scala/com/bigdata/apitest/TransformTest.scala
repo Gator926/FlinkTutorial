@@ -60,9 +60,11 @@ object TransformTest {
     }, lowTempData => {
       (lowTempData.id, "healthy")
     })
+//    coMapResultStream.print("coMap")
 
-    coMapResultStream.print("coMap")
-
+    // 4.3 union 合流
+    val unionStream = highTempStream.union(lowTempStream)
+    unionStream.print("unionStream")
 
     environment.execute(this.getClass.getSimpleName)
   }
