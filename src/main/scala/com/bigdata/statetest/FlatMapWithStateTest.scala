@@ -20,14 +20,13 @@ object FlatMapWithStateTest {
       .keyBy(_.id)
       .flatMapWithState[(String, Double, Double), Double]({
         case (data: SensorReading, None) => (List.empty, Some(data.temperature))
-        case (data: SensorReading, lastTemp: Some[Double]) => {
+        case (data: SensorReading, lastTemp: Some[Double]) =>
           val diff = (data.temperature - lastTemp.get).abs
           if (diff > 10.0){
             ( List((data.id, lastTemp.get, data.temperature)), Some(data.temperature))
           } else {
             ( List.empty, Some(data.temperature))
           }
-        }
       })
 
     alertStream.print("alert")
