@@ -1,8 +1,6 @@
 package com.bigdata.statetest
 
 import com.bigdata.apitest.SensorReading
-import com.bigdata.sinktest.MyReducer
-import javafx.scene.control.DatePicker
 import org.apache.flink.api.common.functions.{ReduceFunction, RichMapFunction}
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor, MapState, MapStateDescriptor, ReducingState, ReducingStateDescriptor, ValueState, ValueStateDescriptor}
 import org.apache.flink.configuration.Configuration
@@ -10,7 +8,6 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 
 import java.util
-import scala.::
 
 object StateTest {
   def main(args: Array[String]): Unit = {
