@@ -11,20 +11,30 @@ object WindowTest {
     val environment = StreamExecutionEnvironment.getExecutionEnvironment
     // 时间语义
     environment.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    environment.getConfig.setAutoWatermarkInterval(50)
 
-    val inputPath = "src/main/resources/sensor.txt"
-    val stream = environment.readTextFile(inputPath)
+    val inputStream = environment.socketTextStream("dev41", 7777)
 
-    val dataStream = stream.map(data => {
+    val dataStream = inputStream.map(data => {
       val arr = data.split(",")
       SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
     })
-//      .assignAscendingTimestamps(_.timestamp * 1000L)   // 升序数据提取时间戳
       .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(3)) {
-        override def extractTimestamp(element: SensorReading): Long = {
-          element.timestamp * 1000L
-        }
+        override def extractTimestamp(element: SensorReading): Long = element.timestamp * 1000L
       })
+
+    dataStream.print("data")
+
+    val latetag = new OutputTag[(String, Double, Long)]("late")
+
+    val resultStream = dataStream.map(data => SensorReading(data.id, data.timestamp, data.temperature))
+      .keyBy(_.id)
+      .timeWindow(Time.seconds(15))
+      .allowedLateness(Time.minutes(1))
+      .reduce((curRes, newData) => SensorReading(curRes.id, newData.timestamp, curRes.temperature.min(newData.temperature)))
+
+    resultStream.getSideOutput(latetag).print("late")
+    resultStream.print("result")
 
     environment.execute()
   }
