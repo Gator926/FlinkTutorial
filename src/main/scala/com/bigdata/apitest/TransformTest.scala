@@ -1,6 +1,6 @@
 package com.bigdata.apitest
 
-import org.apache.flink.api.common.functions.{FilterFunction, MapFunction, ReduceFunction, RichMapFunction}
+import org.apache.flink.api.common.functions.{FilterFunction, ReduceFunction, RichMapFunction}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 
