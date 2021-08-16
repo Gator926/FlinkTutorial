@@ -2,12 +2,12 @@ package com.bigdata.statetest
 
 import com.bigdata.apitest.SensorReading
 import org.apache.flink.api.common.functions.{ReduceFunction, RichMapFunction}
+import org.apache.flink.api.common.restartstrategy.RestartStrategies
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor, MapState, MapStateDescriptor, ReducingState, ReducingStateDescriptor, ValueState, ValueStateDescriptor}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.CheckpointingMode
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
-import org.apache.kafka.common.utils.Time
 
 import java.util
 
@@ -23,6 +23,11 @@ object StateTest {
     environment.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
     environment.getCheckpointConfig.setCheckpointTimeout(60000L)
     environment.getCheckpointConfig.setMaxConcurrentCheckpoints(2)
+
+    /**
+     * 重启策略
+     */
+    environment.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 60000L))
 
     val inputStream = environment.socketTextStream("dev41", 7777)
 
