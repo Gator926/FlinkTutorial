@@ -25,7 +25,7 @@ object TableAPITest {
     // 1.4 基于blink planner的批处理
     val blinkBatchSettings = EnvironmentSettings.newInstance().useBlinkPlanner().inBatchMode().build()
     val blinkBatchTableEnv = TableEnvironment.create(blinkBatchSettings)
-    
+
     env.execute()
   }
 }
