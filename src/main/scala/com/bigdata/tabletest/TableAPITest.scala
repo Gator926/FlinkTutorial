@@ -57,10 +57,24 @@ object TableAPITest {
       .withSchema(
         schema
       ).createTemporaryTable("kafkaInputTable")
-      val kafkaInputTable: Table = tableEnv.from("kafkaInputTable")
-    kafkaInputTable.toAppendStream[(String, Long, Double)].print("kafkaInputTable")
+//      val kafkaInputTable: Table = tableEnv.from("kafkaInputTable")
+//    kafkaInputTable.toAppendStream[(String, Long, Double)].print("kafkaInputTable")
 
+    // 3. 查询转换
+    // 3.1 table API
+    val sensorTable = tableEnv.from("inputTable")
+    sensorTable.select('id, 'temperature)
+      .filter('id === "sensor_1")
+      .toAppendStream[(String, Double)]
+      .print("api")
 
+    tableEnv.sqlQuery(
+      """
+        |select id, temperature
+        |from inputTable
+        |where id = 'sensor_1'
+        |""".stripMargin
+    ).toAppendStream[(String, Double)].print("sql")
 
     env.execute()
   }
