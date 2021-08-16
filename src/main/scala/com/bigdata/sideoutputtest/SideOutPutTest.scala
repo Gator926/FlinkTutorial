@@ -1,7 +1,6 @@
 package com.bigdata.sideoutputtest
 
 import com.bigdata.apitest.SensorReading
-import org.apache.flink.runtime.state.memory.MemoryStateBackend
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
