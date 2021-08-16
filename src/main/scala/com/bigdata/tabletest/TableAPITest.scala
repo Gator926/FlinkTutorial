@@ -4,7 +4,7 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.{DataTypes, EnvironmentSettings, Table, TableEnvironment}
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
-import org.apache.flink.table.descriptors.{FileSystem, OldCsv, Schema}
+import org.apache.flink.table.descriptors.{Csv, FileSystem, OldCsv, Schema}
 import org.apache.flink.table.api.scala._
 import org.apache.flink.streaming.api.scala._
 
@@ -32,7 +32,7 @@ object TableAPITest {
     // 2. 连接外部系统, 读取数据, 注册表
     val filePath = "src/main/resources/sensor.txt"
     tableEnv.connect(new FileSystem().path(filePath))
-      .withFormat(new OldCsv)
+      .withFormat(new Csv)
       .withSchema(
         new Schema()
           .field("id", DataTypes.STRING())
@@ -43,6 +43,8 @@ object TableAPITest {
 
     val inputTable: Table = tableEnv.from("inputTable")
     inputTable.toAppendStream[(String, Long, Double)].print("inputTable")
+
+
 
     env.execute()
   }
