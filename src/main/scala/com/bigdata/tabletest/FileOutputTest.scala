@@ -21,14 +21,6 @@ object FileOutputTest {
       .withSchema(schema)
       .createTemporaryTable("sensorTable")
 
-//    tableEnv.sqlQuery(
-//      """
-//        |select id, timestamps, temperature
-//        |from sensorTable
-//        |where id = 'sensor_1'
-//        |""".stripMargin
-//    ).toAppendStream[(String, Long, Double)].print()
-
     val sensorTable = tableEnv.from("sensorTable")
 
     val filterTable = sensorTable.select('id, 'temperature)
@@ -43,14 +35,6 @@ object FileOutputTest {
       .createTemporaryTable("outputTable")
 
     filterTable.insertInto("outputTable")
-
-//    val aggTable = sensorTable.groupBy("id")
-//      .select('id, 'id.count as 'count)
-//
-//    val schema1 = new Schema()
-//      .field("id", DataTypes.STRING())
-//      .field("count", DataTypes.BIGINT())
-
 
     env.execute()
   }
