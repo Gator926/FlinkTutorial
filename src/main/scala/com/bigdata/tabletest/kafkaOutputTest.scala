@@ -25,10 +25,6 @@ object kafkaOutputTest {
       .select('id, 'temperature)
       .filter('id === "sensor_1")
 
-    val aggTable = tableEnv.from("sensorTable")
-      .groupBy('id)
-      .select('id, 'temperature.sum as 'temperature)
-
     tableEnv.connect(
       new Kafka()
         .version("0.11")
@@ -44,8 +40,7 @@ object kafkaOutputTest {
       )
       .createTemporaryTable("kafkaOutputTable")
 
-//    filterTable.insertInto("kafkaOutputTable")
-    aggTable.insertInto("kafkaOutputTable")
+    filterTable.insertInto("kafkaOutputTable")
 
     env.execute()
   }
