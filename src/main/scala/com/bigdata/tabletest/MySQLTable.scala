@@ -45,8 +45,8 @@ object MySQLTable {
     val sinkDDL =
       """
         |create table sensorTmp (
-        |  id String not null,
-        |  temp Double not null
+        |  id varchar(20) not null,
+        |  temp double not null
         |) with (
         |  'connector.type' = 'jdbc',
         |  'connector.url' = 'jdbc:mysql://localhost:3306/flink?useSSL=false',
