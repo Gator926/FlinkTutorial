@@ -19,8 +19,9 @@ public class FlinkSQLCDC {
                 "sex STRING" +
                 ") WITH (" +
                 " 'connector' = 'mysql-cdc'," +
+                " 'scan.startup.mode' = 'latest-offset'," +
                 " 'hostname' = 'localhost'," +
-                " 'port' = 'localhost'," +
+                " 'port' = '3306'," +
                 " 'username' = 'root'," +
                 " 'password' = 'root'," +
                 " 'database-name' = 'cdc_test'," +
