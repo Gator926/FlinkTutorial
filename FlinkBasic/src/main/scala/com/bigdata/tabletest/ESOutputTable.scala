@@ -3,9 +3,9 @@ package com.bigdata.tabletest
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api.DataTypes
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.descriptors.{Csv, FileSystem, Schema}
+import org.apache.flink.table.descriptors.{Csv, Elasticsearch, FileSystem, Json, Schema}
 
-object AggTable {
+object ESOutputTable {
   def main(args: Array[String]): Unit = {
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
@@ -15,15 +15,31 @@ object AggTable {
       .field("timestamps", DataTypes.BIGINT())
       .field("temperature", DataTypes.DOUBLE())
 
-    tableEnv.connect(new FileSystem().path("src/main/resources/sensor.txt"))
+    tableEnv.connect(new FileSystem().path("FlinkBasic/src/main/resources/sensor.txt"))
       .withFormat(new Csv)
       .withSchema(schema)
       .createTemporaryTable("sensorTable")
 
-    tableEnv.from("sensorTable")
+    val aggTable = tableEnv.from("sensorTable")
       .groupBy('id)
       .select('id, 'temperature.avg as 'temperature)
-      .toRetractStream[(String, Double)].print()
+
+    tableEnv.connect(new Elasticsearch()
+      .version("6")
+      .host("dev41", 9200, "http")
+      .index("sensor")
+      .documentType("temperature")
+    )
+      .inUpsertMode()
+      .withFormat(new Json())
+      .withSchema(
+        new Schema()
+          .field("id", DataTypes.STRING())
+          .field("temperature", DataTypes.DOUBLE())
+      )
+      .createTemporaryTable("esOutputTable")
+
+    aggTable.insertInto("esOutputTable")
 
     env.execute()
   }

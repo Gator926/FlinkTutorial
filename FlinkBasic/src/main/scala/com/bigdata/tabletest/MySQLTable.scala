@@ -30,7 +30,7 @@ object MySQLTable {
       .field("timestamps", DataTypes.BIGINT())
       .field("temperature", DataTypes.DOUBLE())
 
-    tableEnv.connect(new FileSystem().path("src/main/resources/sensor.txt"))
+    tableEnv.connect(new FileSystem().path("FlinkBasic/src/main/resources/sensor.txt"))
       .withFormat(new Csv)
       .withSchema(schema)
       .createTemporaryTable("sensorTable")

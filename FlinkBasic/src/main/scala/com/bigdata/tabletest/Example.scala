@@ -10,7 +10,7 @@ object Example {
   def main(args: Array[String]): Unit = {
     val environment: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val inputStream = environment.readTextFile(inputPath)
 
     val dataStream = inputStream.map(data => {

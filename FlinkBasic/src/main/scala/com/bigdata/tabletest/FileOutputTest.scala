@@ -16,7 +16,7 @@ object FileOutputTest {
       .field("timestamps", DataTypes.BIGINT())
       .field("temperature", DataTypes.DOUBLE())
 
-    tableEnv.connect(new FileSystem().path("src/main/resources/sensor.txt"))
+    tableEnv.connect(new FileSystem().path("FlinkBasic/src/main/resources/sensor.txt"))
       .withFormat(new Csv)
       .withSchema(schema)
       .createTemporaryTable("sensorTable")
@@ -26,7 +26,7 @@ object FileOutputTest {
     val filterTable = sensorTable.select('id, 'temperature)
       .filter('id === "sensor_1")
 
-    tableEnv.connect(new FileSystem().path("src/main/resources/sensor_output.txt"))
+    tableEnv.connect(new FileSystem().path("FlinkBasic/src/main/resources/sensor_output.txt"))
       .withSchema(new Schema()
       .field("id", DataTypes.STRING())
       .field("temperature", DataTypes.DOUBLE())

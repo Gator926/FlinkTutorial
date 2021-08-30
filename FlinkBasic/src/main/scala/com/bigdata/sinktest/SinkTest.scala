@@ -9,7 +9,7 @@ import org.apache.flink.streaming.api.windowing.time.Time
 object SinkTest {
   def main(args: Array[String]): Unit = {
     val environment = StreamExecutionEnvironment.getExecutionEnvironment
-//    val inputPath = "src/main/resources/sensor.txt"
+//    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
 //    val stream = environment.readTextFile(inputPath)
     val stream = environment.socketTextStream("localhost", 7777)
 

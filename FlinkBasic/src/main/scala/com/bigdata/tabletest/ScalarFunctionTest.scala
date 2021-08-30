@@ -7,10 +7,10 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.functions.AggregateFunction
+import org.apache.flink.table.functions.ScalarFunction
 import org.apache.flink.types.Row
 
-object AggregateFunctionTest {
+object ScalarFunctionTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -23,7 +23,7 @@ object AggregateFunctionTest {
     val tableEnv = StreamTableEnvironment.create(env, settings)
 
     // 读取数据
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 先转换成样例类类型（简单转换操作）
@@ -39,53 +39,35 @@ object AggregateFunctionTest {
     val sensorTable = tableEnv.fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime as 'ts)
 
     /**
-     * table api
+     * 调用自定义hash函数，对id进行hash运算
+     * 1. table api
+     * 首先new一个UDF的实例
      */
-    val temp = new AvgTemp()
-    sensorTable
-      .groupBy('id)
-      .aggregate(temp('temperature) as 'avgTemp)
-      .select('id, 'avgTemp)
-//      .toRetractStream[Row].print()
+    val hashCode = new HashCode(23)
+    val resultTable = sensorTable
+      .select('id, 'ts, hashCode('id))
 
     /**
-     * sql
+     * 2. sql
+     * 需要在环境中注册UDF
      */
     tableEnv.createTemporaryView("sensor", sensorTable)
-    tableEnv.registerFunction("avgTemp", temp)
-    tableEnv.sqlQuery(
+    tableEnv.registerFunction("hashCode", hashCode)
+    val resultSqlTable = tableEnv.sqlQuery(
       """
-        |select id, avgTemp(temperature) from sensor group by id
+        |select id, ts, hashCode(id) from sensor
         |""".stripMargin)
-      .toRetractStream[Row].print()
+
+    resultTable.toAppendStream[Row].print("table api")
+    resultSqlTable.toAppendStream[Row].print("sql")
 
     env.execute()
   }
 }
 
-/**
- * 定义一个类，专门表示聚合的状态
- */
-class AvgTemAcc {
-  var sum: Double = 0.0
-  var count: Int = 0
-}
-
-/**
- * 自定义聚合函数, 求每个传感器的平均温度值, 保存状态(tempSum, tempCount)
- */
-class AvgTemp extends AggregateFunction[Double, AvgTemAcc]{
-  override def getValue(accumulator: AvgTemAcc): Double = {
-    accumulator.sum / accumulator.count
-  }
-
-  override def createAccumulator(): AvgTemAcc = new AvgTemAcc
-
-  /**
-   * 还要实现一个具体的处理计算函数, accumulate
-   */
-  def accumulate(accumulator: AvgTemAcc, temp: Double): Unit ={
-    accumulator.sum += temp
-    accumulator.count += 1
+// 自定义标量函数
+class HashCode(factor: Int) extends ScalarFunction {
+  def eval(s: String): Int = {
+    s.hashCode * factor - 10000
   }
 }

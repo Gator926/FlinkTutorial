@@ -9,7 +9,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011
 object KafkaSink {
   def main(args: Array[String]): Unit = {
     val environment = StreamExecutionEnvironment.getExecutionEnvironment
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val stream = environment.readTextFile(inputPath)
 
     val dataStream = stream.map(data => {

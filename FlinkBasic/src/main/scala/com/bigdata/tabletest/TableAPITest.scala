@@ -29,7 +29,7 @@ object TableAPITest {
 //    val blinkBatchTableEnv = TableEnvironment.create(blinkBatchSettings)
 
     // 2.1 连接外部系统, 读取数据, 注册表
-    val filePath = "src/main/resources/sensor.txt"
+    val filePath = "FlinkBasic/src/main/resources/sensor.txt"
 
     val schema: Schema = new Schema()
       .field("id", DataTypes.STRING())

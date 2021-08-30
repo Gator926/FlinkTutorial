@@ -7,7 +7,7 @@ import org.apache.flink.streaming.api.scala._
 object TransformTest {
   def main(args: Array[String]): Unit = {
     val environment = StreamExecutionEnvironment.getExecutionEnvironment
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val stream = environment.readTextFile(inputPath)
 
     // 1. 先转换成样例类类型

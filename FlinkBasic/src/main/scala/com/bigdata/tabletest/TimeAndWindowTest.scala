@@ -19,7 +19,7 @@ object TimeAndWindowTest {
       .build()
     val tableEnv = StreamTableEnvironment.create(environment, settings)
 
-    val inputStream = environment.readTextFile("src/main/resources/sensor.txt")
+    val inputStream = environment.readTextFile("FlinkBasic/src/main/resources/sensor.txt")
 
     val dataStream = inputStream.map(data => {
       val arr = data.split(",")

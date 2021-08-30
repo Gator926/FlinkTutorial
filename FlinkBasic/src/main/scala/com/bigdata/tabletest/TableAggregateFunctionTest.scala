@@ -24,7 +24,7 @@ object TableAggregateFunctionTest {
     val tableEnv = StreamTableEnvironment.create(env, settings)
 
     // 读取数据
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 先转换成样例类类型（简单转换操作）

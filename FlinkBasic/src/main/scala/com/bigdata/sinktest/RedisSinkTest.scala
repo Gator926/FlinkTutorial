@@ -10,7 +10,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.{RedisCommand, 
 object RedisSinkTest {
   def main(args: Array[String]): Unit = {
     val environment = StreamExecutionEnvironment.getExecutionEnvironment
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val stream = environment.readTextFile(inputPath)
 
     val dataStream: DataStream[SensorReading] = stream.map(data => {

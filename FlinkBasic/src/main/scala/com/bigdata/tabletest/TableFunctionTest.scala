@@ -7,10 +7,10 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.functions.ScalarFunction
+import org.apache.flink.table.functions.TableFunction
 import org.apache.flink.types.Row
 
-object ScalarFunctionTest {
+object TableFunctionTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -23,7 +23,7 @@ object ScalarFunctionTest {
     val tableEnv = StreamTableEnvironment.create(env, settings)
 
     // 读取数据
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 先转换成样例类类型（简单转换操作）
@@ -39,35 +39,37 @@ object ScalarFunctionTest {
     val sensorTable = tableEnv.fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime as 'ts)
 
     /**
-     * 调用自定义hash函数，对id进行hash运算
-     * 1. table api
-     * 首先new一个UDF的实例
+     * table api
      */
-    val hashCode = new HashCode(23)
-    val resultTable = sensorTable
-      .select('id, 'ts, hashCode('id))
+    val split = new Split("_")
+    sensorTable
+      .joinLateral(split('id) as ('word, 'length))
+      .select('id, 'word, 'length)
+      .toAppendStream[Row]
+      .print()
 
     /**
-     * 2. sql
-     * 需要在环境中注册UDF
+     * sql
      */
     tableEnv.createTemporaryView("sensor", sensorTable)
-    tableEnv.registerFunction("hashCode", hashCode)
-    val resultSqlTable = tableEnv.sqlQuery(
+    tableEnv.registerFunction("split", split)
+    tableEnv.sqlQuery(
       """
-        |select id, ts, hashCode(id) from sensor
+        |select id, word, length from sensor, lateral table(split(id)) as splitid(word, length)
         |""".stripMargin)
-
-    resultTable.toAppendStream[Row].print("table api")
-    resultSqlTable.toAppendStream[Row].print("sql")
+      .toAppendStream[Row].print("sql")
 
     env.execute()
   }
 }
 
-// 自定义标量函数
-class HashCode(factor: Int) extends ScalarFunction {
-  def eval(s: String): Int = {
-    s.hashCode * factor - 10000
+/**
+ * 自定义TableFunction
+ */
+class Split(separator: String) extends TableFunction[(String, Int)]{
+  def eval(str: String): Unit ={
+    str.split(separator).foreach(word=>{
+      collect((word, word.length))
+    })
   }
 }

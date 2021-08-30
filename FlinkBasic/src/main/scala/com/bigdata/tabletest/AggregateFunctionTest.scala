@@ -7,10 +7,10 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.functions.TableFunction
+import org.apache.flink.table.functions.AggregateFunction
 import org.apache.flink.types.Row
 
-object TableFunctionTest {
+object AggregateFunctionTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -23,7 +23,7 @@ object TableFunctionTest {
     val tableEnv = StreamTableEnvironment.create(env, settings)
 
     // 读取数据
-    val inputPath = "src/main/resources/sensor.txt"
+    val inputPath = "FlinkBasic/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 先转换成样例类类型（简单转换操作）
@@ -41,35 +41,51 @@ object TableFunctionTest {
     /**
      * table api
      */
-    val split = new Split("_")
+    val temp = new AvgTemp()
     sensorTable
-      .joinLateral(split('id) as ('word, 'length))
-      .select('id, 'word, 'length)
-      .toAppendStream[Row]
-      .print()
+      .groupBy('id)
+      .aggregate(temp('temperature) as 'avgTemp)
+      .select('id, 'avgTemp)
+//      .toRetractStream[Row].print()
 
     /**
      * sql
      */
     tableEnv.createTemporaryView("sensor", sensorTable)
-    tableEnv.registerFunction("split", split)
+    tableEnv.registerFunction("avgTemp", temp)
     tableEnv.sqlQuery(
       """
-        |select id, word, length from sensor, lateral table(split(id)) as splitid(word, length)
+        |select id, avgTemp(temperature) from sensor group by id
         |""".stripMargin)
-      .toAppendStream[Row].print("sql")
+      .toRetractStream[Row].print()
 
     env.execute()
   }
 }
 
 /**
- * 自定义TableFunction
+ * 定义一个类，专门表示聚合的状态
  */
-class Split(separator: String) extends TableFunction[(String, Int)]{
-  def eval(str: String): Unit ={
-    str.split(separator).foreach(word=>{
-      collect((word, word.length))
-    })
+class AvgTemAcc {
+  var sum: Double = 0.0
+  var count: Int = 0
+}
+
+/**
+ * 自定义聚合函数, 求每个传感器的平均温度值, 保存状态(tempSum, tempCount)
+ */
+class AvgTemp extends AggregateFunction[Double, AvgTemAcc]{
+  override def getValue(accumulator: AvgTemAcc): Double = {
+    accumulator.sum / accumulator.count
+  }
+
+  override def createAccumulator(): AvgTemAcc = new AvgTemAcc
+
+  /**
+   * 还要实现一个具体的处理计算函数, accumulate
+   */
+  def accumulate(accumulator: AvgTemAcc, temp: Double): Unit ={
+    accumulator.sum += temp
+    accumulator.count += 1
   }
 }
